@@ -29,5 +29,9 @@ $devTools->dump($testVar);
 $devTools->dump($testVar2);
 $devTools->dump($testVar3);
 $devTools->dump($testVar4);
-$devTools->pretty_print($testVar4, false);
-$devTools->pretty_print($testVar4);
+
+$devTools->tree($testVar);
+$devTools->tree($testVar2);
+$devTools->tree($testVar3);
+$devTools->tree($testVar4, false);
+$devTools->tree($testVar4);

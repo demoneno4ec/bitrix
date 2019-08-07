@@ -4,7 +4,12 @@ namespace Develop;
 
 class DevTools
 {
-    private $level = 0;
+    private static $oneLineDown = "\n";
+    private $level = 1;
+    private $tab = '    ';
+    private $limitLenghtString = 40;
+    private $openedTree;
+    private $marginTree = 10;
     private $style = [
         'style' => 'font-size:10px;
             position: relative;
@@ -14,118 +19,222 @@ class DevTools
             border: 1px solid #888;
         ',
     ];
-
-    public function dump($variable = null)
-    {
-        echo "<pre style='".$this->style['style']."'>";
-        $this->filter_tilda_keys($variable, true);
-        echo '</pre>';
-    }
-
-
-    private function wrap($color, $text)
-    {
-        return '(<span style="color:'.$color.';">'.htmlspecialchars($text).'</span>)';
-    }
-
-    private function filter_tilda_keys(&$outputVariable, $resetLevel = false)
-    {
-        $tab = '    ';
-        $type = gettype($outputVariable);
-
-        echo $this->wrap('magenta', $type);
-
-        if (is_array($outputVariable) || is_object($outputVariable)) {
-            echo 'count '.count($outputVariable);
-            echo "\n";
-            foreach ($outputVariable as $key => $value) {
-                echo str_repeat($tab, $this->level);
-
-                $this->level++;
-                echo $this->wrap('red', $key);
-                echo ' => ';
-                $this->filter_tilda_keys($value);
-            }
-        } else {
-            $this->showSimple($outputVariable);
-            echo "\n";
-        }
-
-        if ($resetLevel === true) {
-            $this->level = 1;
-        } else {
-            $this->level--;
-        }
-    }
-
-    private function showSimple($simpleVariable)
-    {
-        if (is_null($simpleVariable)) {
-            echo 'null';
-        } elseif (empty($simpleVariable)) {
-            echo "''";
-        } elseif (is_string($simpleVariable)) {
-            $simpleVariable = htmlspecialchars($simpleVariable);
-            echo(strlen($simpleVariable) < 40 ? $simpleVariable : substr($simpleVariable, 0, 40).'…');
-        } else {
-            echo $simpleVariable;
-        }
-    }
-
+    private $key;
 
 
     /**
      * Выводит массив в виде дерева
      *
      * @param  mixed - Массив или объект, который надо обойти
-     * @param  boolean - Раскрыть дерево элементов по-умолчанию или нет?
+     * @param  boolean  $opened  - Раскрыть дерево элементов по-умолчанию или нет?
      *
      * @return void
      */
-    public function pretty_print($in, $opened = true)
+    public function tree($variable, $opened = true)
     {
-        if ($opened) {
-            $opened = ' open';
-        }
-        if (is_object($in) || is_array($in)) {
-            echo '<div style="'.$this->style['style'].'">';
-            echo '<details'.$opened.'>';
-            echo '<summary>';
-            echo is_object($in) ? 'Object {'.count((array) $in).'}' : 'Array ['.count($in).']';
-            echo '</summary>';
-            $this->pretty_print_rec($in, $opened);
-            echo '</details>';
-            echo '</div>';
-        }
+        $this->setOpenedTree($opened);
+
+        $this->resetLevel();
+        $this->setKey(null);
+        echo '<div style="'.$this->style['style'].'">';
+        $this->viewTree($variable, $opened);
+        echo '</div>';
     }
 
-    private function pretty_print_rec($in, $opened, $margin = 10)
+    /**
+     * Выводит любую переменную, в удобочитаемом виде
+     * @param  null  $variable
+     */
+    public function dump($variable = null)
     {
-        if (!is_object($in) && !is_array($in)) {
-            return;
-        }
+        $this->resetLevel();
+        echo '<pre style="'.$this->style['style'].'">';
+        $this->viewDump($variable);
+        echo '</pre>';
+    }
 
-        foreach ($in as $key => $value) {
-            if (is_object($value) || is_array($value)) {
-                echo '<details style="margin-left:'.$margin.'px" '.$opened.'>';
-                echo '<summary>';
-                echo is_object($value) ? $key.' {'.count((array) $value).'}' : $key.' ['.count($value).']';
-                echo '</summary>';
-                $this->pretty_print_rec($value, $opened, $margin + 10);
-                echo '</details>';
-            } else {
-                switch (gettype($value)) {
-                    case 'string':
-                        $bgc = 'red';
-                        break;
-                    case 'integer':
-                        $bgc = 'green';
-                        break;
-                }
-                echo '<div style="margin-left:'.$margin.'px">'.$key.' : <span style="color:'.$bgc.'">'.$value.'</span> ('.gettype($value).')</div>';
+    /**
+     * Рекурсивный метод для по уровневого вывода (отображение)
+     * @param $variable
+     */
+    private function viewDump(&$variable)
+    {
+        $type = gettype($variable);
+        $this->showWrap('magenta', $type);
+
+        if (!$this->checkSimple($variable)) {
+            $this->showSimple($variable);
+            echo self::$oneLineDown;
+        } else {
+            echo 'count '.count($variable);
+            echo self::$oneLineDown;
+            foreach ($variable as $key => $value) {
+                $this->showTab();
+                $this->level++;
+                $this->showKey($key);
+                $this->viewDump($value);
             }
         }
+
+        $this->level--;
+    }
+
+    /**
+     * Рекурсивный метод для древовидного вывода (отображение)
+     * @param $variable
+     */
+    private function viewTree($variable)
+    {
+        $type = gettype($variable);
+
+        if (!$this->checkSimple($variable)) {
+
+            echo '<div style="margin-left:'.$this->marginTree * $this->level.'px">';
+            $this->showKey($this->key);
+            $this->showWrap('magenta', $type);
+            $this->showSimple($variable);
+            echo '</div>';
+            echo self::$oneLineDown;
+        } else {
+            echo '<details'.$this->getOpenedTree().' style="margin-left:'.$this->marginTree * $this->level.'px">';
+            echo '<summary>';
+            $opened = $this->getOpenedTree();
+            $this->showKey($this->key);
+            $this->showWrap('magenta', $type);
+            echo 'count '.count($variable);
+
+            echo '</summary>';
+            foreach ($variable as $key => $value) {
+                $this->level++;
+                $this->setKey($key);
+                $this->viewTree($value, $opened);
+            }
+            echo '</details>';
+        }
+        $this->level--;
+
+    }
+
+    /** show*/
+    /**
+     * Отображение табуляции, для уровней dump
+     */
+    private function showTab()
+    {
+        echo str_repeat($this->tab, $this->level);
+    }
+
+    /**
+     * Отображает текст с нужным цветом
+     * @param $color
+     * @param $text
+     */
+    private function showWrap($color, $text)
+    {
+        echo ' (<span style="color:'.$color.';">'.$this->clearOuput($text).'</span>) ';
+    }
+
+    /**
+     * Отображение примитива
+     * @param $variable
+     */
+    private function showSimple($variable)
+    {
+        if ($variable === null) {
+            echo 'null';
+        } elseif (empty($variable)) {
+            echo "''";
+        } elseif (is_string($variable)) {
+            $variable = $this->clearOuput($variable);
+            echo $this->showString($variable);
+        } else {
+            echo $variable;
+        }
+    }
+
+    /**
+     * Отображает строку, обрезая по пределу
+     * @param  string  $string
+     * @return string|string
+     */
+    private function showString($string)
+    {
+        return strlen($string) >= $this->limitLenghtString ? substr($string, 0, $this->limitLenghtString).'…' : $string;
+    }
+
+    /**
+     * Отобразить ключ, если он установлен
+     * @param $key
+     */
+    private function showKey($key)
+    {
+        if (isset($key)) {
+            $this->showWrap('red', $key);
+            echo ' : ';
+        }
+    }
+
+    /**
+     * Проверяет является ли переменная массивом или объектом
+     * @param $variable
+     * @return bool
+     */
+    private function checkSimple($variable)
+    {
+        return is_array($variable) || is_object($variable);
+    }
+
+    /**
+     * Очищает строку перед выводом, от html тегов
+     * @param  string  $variable
+     * @return string
+     */
+    private function clearOuput($variable)
+    {
+        return htmlspecialchars($variable);
     }
 
 
+    /** increments*/
+    /**
+     * Сбрасывает уровень погружения для дампа
+     */
+    private function resetLevel()
+    {
+        $this->level = 1;
+    }
+
+
+    /** getters and setters*/
+    /**
+     * @return bool
+     */
+    public function getOpenedTree()
+    {
+        return $this->openedTree;
+    }
+
+    /**
+     * @param  bool  $opened
+     */
+    public function setOpenedTree($opened)
+    {
+        $this->openedTree = $opened === true ? ' open' : false;
+    }
+
+    /**
+     * @return string
+     */
+    public function getKey()
+    {
+        return $this->key;
+    }
+
+    /**
+     * @param  string  $key
+     */
+    public function setKey($key)
+    {
+        $this->key = $key;
+    }
 }
