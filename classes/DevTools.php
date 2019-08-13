@@ -2,6 +2,8 @@
 
 namespace Develop;
 
+use RuntimeException;
+
 class DevTools
 {
     private static $oneLineDown = "\n";
@@ -20,8 +22,9 @@ class DevTools
         ',
     ];
     private $key;
+    private $path;
 
-
+    /**methods*/
     /**
      * Выводит массив в виде дерева
      *
@@ -53,6 +56,30 @@ class DevTools
         echo '</pre>';
     }
 
+//dump in file
+    public function dumpFile($variable, $fileName = 'dump.txt'){
+        $path = $_SERVER['DOCUMENT_ROOT'].'/upload/dump/';
+        if(!mkdir($path, 0775, true) && !is_dir($path)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $path));
+        }
+        $text = '=======================\r\n';
+        $text .= print_r($variable, 1);
+        $text .= '\r\n';
+        file_put_contents($path.$fileName, $text, FILE_APPEND);
+    }
+    /**
+     * Очищает строку от всех символов кроме ведущего плюса и цифр.
+     *
+     *
+     */
+    function clearPhone($string){
+        $result = '';
+        if(!is_array($string) and !is_object($string)){
+            $result = preg_replace('/[^\+0-9+]/', '', $string);
+        }
+        return $result;
+    }
+    /**views*/
     /**
      * Рекурсивный метод для по уровневого вывода (отображение)
      * @param $variable
