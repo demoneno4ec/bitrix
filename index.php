@@ -1,9 +1,13 @@
 <?php
 ini_set('display_errors', true);
 error_reporting(-1);
-require $_SERVER['DOCUMENT_ROOT'].'/classes/DevTools.php';
-use Develop\DevTools;
-$devTools = new DevTools();
+
+require __DIR__.'/classes/autoload.php';
+
+use Develop\Dump\DumpDev\DumpDev;
+use Develop\Dump\DumpTree\DumpTree;
+
+$dumpTree = new DumpTree();
 //phpinfo();
 
 $testVar = 1;
@@ -25,13 +29,13 @@ $testVar4 = [
     'yes' => false
 ];
 
-$devTools->dump($testVar);
-$devTools->dump($testVar2);
-$devTools->dump($testVar3);
-$devTools->dump($testVar4);
+DumpDev::dump($testVar);
+DumpDev::dump($testVar2);
+DumpDev::dump($testVar3);
+DumpDev::dump($testVar4);
 
-$devTools->tree($testVar);
-$devTools->tree($testVar2);
-$devTools->tree($testVar3);
-$devTools->tree($testVar4, false);
-$devTools->tree($testVar4);
+$dumpTree->dump($testVar);
+$dumpTree->dump($testVar2);
+$dumpTree->dump($testVar3);
+$dumpTree->dump($testVar4, false);
+$dumpTree->dump($testVar4);
