@@ -4,11 +4,12 @@ namespace Develop\Dump;
 
 use Develop\DevTools;
 
-class Dump extends DevTools
+abstract class Dump extends DevTools
 {
+    protected $oneLineDown = "\n";
+
     private $level = 1;
     private $limitLenghtString = 40;
-    private $oneLineDown = "\n";
     private $style = [
         'style' => 'font-size:10px;
             position: relative;
@@ -18,12 +19,27 @@ class Dump extends DevTools
             border: 1px solid #888;
         ',
     ];
+
     private $key;
 
     public function __construct()
     {
         parent::__construct();
     }
+
+    abstract protected function viewStart();
+    abstract protected function view($variable);
+    abstract protected function viewEnd();
+
+    protected function dumpDefault($variable): void
+    {
+        $this->resetLevel();
+        $this->setKey('');
+        $this->viewStart();
+        $this->view($variable);
+        $this->viewEnd();
+    }
+
 
     /** Уровень погружения*/
     /**
@@ -59,23 +75,6 @@ class Dump extends DevTools
     }
 
     /**
-     * Возвращает стили, для отображения результата
-     */
-    protected function getStyle()
-    {
-        return $this->style['style'];
-    }
-
-    /**
-     * Отображение перевода строки
-     */
-    protected function lineDown(): void
-    {
-        echo $this->oneLineDown;
-    }
-
-
-    /**
      * Проверяет является ли переменная массивом или объектом
      * @param $variable
      * @return bool
@@ -86,6 +85,17 @@ class Dump extends DevTools
     }
 
     /**
+     * Отображает строку, обрезая по пределу
+     * @param  string  $string
+     * @return string|string
+     */
+    private function getString($string): string
+    {
+        return strlen($string) >= $this->limitLenghtString ? substr($string, 0, $this->limitLenghtString).'…' : $string;
+    }
+
+    /** views */
+    /**
      * Отображает текст с нужным цветом
      * @param $color
      * @param $text
@@ -93,6 +103,14 @@ class Dump extends DevTools
     protected function showWrap($color, $text): void
     {
         echo ' (<span style="color:'.$color.';">'.$this->clearOutput($text).'</span>) ';
+    }
+
+    /**
+     * Отображение перевода строки
+     */
+    protected function lineDown(): void
+    {
+        echo $this->getLineDown();
     }
 
     /**
@@ -107,7 +125,7 @@ class Dump extends DevTools
             echo "''";
         } elseif (is_string($variable)) {
             $variable = $this->clearOutput($variable);
-            echo $this->showString($variable);
+            echo $this->getString($variable);
         } else {
             echo $variable;
         }
@@ -115,7 +133,6 @@ class Dump extends DevTools
 
     /**
      * Отобразить ключ, если он установлен
-     * @param $key
      */
     protected function showKey(): void
     {
@@ -126,6 +143,7 @@ class Dump extends DevTools
         }
     }
 
+    /** getters */
     /**
      * @return string
      */
@@ -135,22 +153,27 @@ class Dump extends DevTools
     }
 
     /**
+     * Возвращает стили, для отображения результата
+     */
+    protected function getStyle()
+    {
+        return $this->style['style'];
+    }
+
+    /**
+     * @return string
+     */
+    protected function getLineDown(): string
+    {
+        return $this->oneLineDown;
+    }
+
+    /** setters */
+    /**
      * @param  string  $key
      */
     protected function setKey($key): void
     {
         $this->key = strip_tags($key);
     }
-
-    /**
-     * Отображает строку, обрезая по пределу
-     * @param  string  $string
-     * @return string|string
-     */
-    private function showString($string): string
-    {
-        return strlen($string) >= $this->limitLenghtString ? substr($string, 0, $this->limitLenghtString).'…' : $string;
-    }
-
-
 }

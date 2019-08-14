@@ -30,17 +30,23 @@ class DumpDev extends Dump
     public static function dump($variable = null): void
     {
         $dump = self::getInstance();
-        $dump->resetLevel();
-        $dump->setKey(null);
-        echo '<pre style="'.$dump->getStyle().'">';
-        $dump->view($variable);
+
+        $dump->dumpDefault($variable);
+    }
+
+    protected function viewStart(): void
+    {
+        echo '<pre style="'.$this->getStyle().'">';
+    }
+    protected function viewEnd(): void
+    {
         echo '</pre>';
     }
     /**
      * Рекурсивный метод для по уровневого вывода (отображение)
      * @param $variable
      */
-    private function view(&$variable): void
+    protected function view($variable): void
     {
         $type = gettype($variable);
         $this->showWrap('magenta', $type);

@@ -2,12 +2,11 @@
 
 namespace Develop;
 
-use RuntimeException;
 
-class DevTools
+abstract class DevTools
 {
-
-    private $path;
+    // Путь, для каждой CMS устанавливается свой.
+    protected $path = __DIR__.'/';
 
 
     public function __construct()
@@ -19,35 +18,25 @@ class DevTools
     }
 
     /**methods*/
-
-
-
-
-    //DumpDev in file
-    public function dumpFile($variable, $fileName = 'DumpDev.txt')
-    {
-        $path = $_SERVER['DOCUMENT_ROOT'].'/upload/DumpDev/';
-        if (!mkdir($path, 0775, true) && !is_dir($path)) {
-            throw new RuntimeException(sprintf('Directory "%s" was not created', $path));
-        }
-        $text = '=======================\r\n';
-        $text .= print_r($variable, 1);
-        $text .= '\r\n';
-        file_put_contents($path.$fileName, $text, FILE_APPEND);
-    }
-
     /**
      * Очищает строку от всех символов кроме ведущего плюса и цифр.
-     *
-     *
+     * @param $string
+     * @return string
      */
-    protected function clearPhone($string)
+    protected function clearPhone($string): string
     {
         $result = '';
-        if (!is_array($string) and !is_object($string)) {
-            $result = preg_replace('/[^\+0-9+]/', '', $string);
+
+        if (!is_array($string) && !is_object($string)) {
+            $string = strip_tags($string);
+            $result = preg_replace_callback(
+                '/[^\+0-9+]/',
+                static function (){return '';},
+                $string
+            );
         }
-        return $result;
+
+        return $result ?? '';
     }
 
     /**views*/

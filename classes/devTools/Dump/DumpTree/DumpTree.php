@@ -8,10 +8,20 @@ class DumpTree extends Dump
 {
     private $margin = 10;
     private $openedTree;
+    private static $_instance;
 
     public function __construct()
     {
         parent::__construct();
+    }
+
+    public static function getInstance(): DumpTree
+    {
+        if (self::$_instance !== null){
+            return self::$_instance;
+        }
+
+        return new self;
     }
 
     /**
@@ -22,21 +32,27 @@ class DumpTree extends Dump
      *
      * @return void
      */
-    public function dump($variable, $opened = true)
+    public static function dump($variable = null, $opened = true): void
     {
-        $this->setOpenedTree($opened);
+        $dump = self::getInstance();
+        $dump->setOpenedTree($opened);
 
-        $this->resetLevel();
-        $this->setKey('');
+        $dump->dumpDefault($variable);
+    }
+
+    protected function viewStart(): void
+    {
         echo '<div style="'.$this->getStyle().'">';
-        $this->view($variable, $opened);
+    }
+    protected function viewEnd(): void
+    {
         echo '</div>';
     }
     /**
      * Рекурсивный метод для древовидного вывода (отображение)
      * @param $variable
      */
-    private function view($variable)
+    protected function view($variable): void
     {
         $type = gettype($variable);
 
@@ -70,9 +86,9 @@ class DumpTree extends Dump
 
     /** getters and setters*/
     /**
-     * @return bool
+     * @return string
      */
-    public function getOpenedTree()
+    public function getOpenedTree(): string
     {
         return $this->openedTree;
     }
@@ -80,8 +96,8 @@ class DumpTree extends Dump
     /**
      * @param  bool  $opened
      */
-    public function setOpenedTree($opened)
+    public function setOpenedTree($opened): void
     {
-        $this->openedTree = $opened === true ? ' open' : false;
+        $this->openedTree = $opened === true ? ' open' : '';
     }
 }

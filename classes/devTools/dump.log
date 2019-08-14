@@ -1,0 +1,128 @@
+=======================
+Array
+(
+    [0] => Array
+        (
+            [0] => Array
+                (
+                    [test] => string
+                )
+
+            [test2] => 1
+        )
+
+    [1] => Array
+        (
+            [test] => string
+        )
+
+    [2] => Array
+        (
+            [test] => DateTime Object
+                (
+                    [date] => 2019-08-14 12:22:36.334042
+                    [timezone_type] => 3
+                    [timezone] => UTC
+                )
+
+        )
+
+    [yes] => 
+)
+
+=======================
+Array
+(
+    [0] => Array
+        (
+            [0] => Array
+                (
+                    [test] => string
+                )
+
+            [test2] => 1
+        )
+
+    [1] => Array
+        (
+            [test] => string
+        )
+
+    [2] => Array
+        (
+            [test] => DateTime Object
+                (
+                    [date] => 2019-08-14 12:23:12.730966
+                    [timezone_type] => 3
+                    [timezone] => UTC
+                )
+
+        )
+
+    [yes] => 
+)
+
+=======================
+Array
+(
+    [0] => Array
+        (
+            [0] => Array
+                (
+                    [test] => string
+                )
+
+            [test2] => 1
+        )
+
+    [1] => Array
+        (
+            [test] => string
+        )
+
+    [2] => Array
+        (
+            [test] => DateTime Object
+                (
+                    [date] => 2019-08-14 12:23:13.957429
+                    [timezone_type] => 3
+                    [timezone] => UTC
+                )
+
+        )
+
+    [yes] => 
+)
+
+=======================
+Array
+(
+    [0] => Array
+        (
+            [0] => Array
+                (
+                    [test] => string
+                )
+
+            [test2] => 1
+        )
+
+    [1] => Array
+        (
+            [test] => string
+        )
+
+    [2] => Array
+        (
+            [test] => DateTime Object
+                (
+                    [date] => 2019-08-14 12:25:25.528086
+                    [timezone_type] => 3
+                    [timezone] => UTC
+                )
+
+        )
+
+    [yes] => 
+)
+

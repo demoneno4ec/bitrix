@@ -8,6 +8,7 @@ class DevLoader
         __DIR__  . '/Dump/Dump.php',
         __DIR__  . '/Dump/DumpDev/DumpDev.php',
         __DIR__  . '/Dump/DumpTree/DumpTree.php',
+        __DIR__  . '/Dump/DumpFile/DumpFile.php',
     );
 
     public static function getLoader(): void
